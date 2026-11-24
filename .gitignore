@@ -1,0 +1,11 @@
+# Local/editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.history/
+
+# Uploaded runtime files; keep the folder protection rules.
+public/uploads/books/*
+!public/uploads/books/.htaccess
+public/uploads/covers/*
+!public/uploads/covers/.htaccess

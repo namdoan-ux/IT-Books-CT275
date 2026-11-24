@@ -1,0 +1,7 @@
+Options -Indexes
+RewriteEngine On
+RewriteRule ^app(?:/|$) - [F,L,NC]
+RewriteRule (^|/)\.git(?:/|$) - [F,L,NC]
+<FilesMatch "\.(sql|md|log|ini|dist|env)$|^(README|composer\.(json|lock))">
+  Require all denied
+</FilesMatch>
