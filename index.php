@@ -1,0 +1,28 @@
+<?php
+require 'config.php';
+$cats = $pdo->query("SELECT c.*, COUNT(b.id) book_count FROM categories c LEFT JOIN books b ON b.category_id=c.id AND b.status='active' GROUP BY c.id ORDER BY c.name LIMIT 8")->fetchAll();
+$totalBooks = (int)$pdo->query("SELECT COUNT(*) FROM books WHERE status='active'")->fetchColumn();
+$totalCats = (int)$pdo->query("SELECT COUNT(*) FROM categories")->fetchColumn();
+$featured = $pdo->query("SELECT b.*, c.name category_name FROM books b LEFT JOIN categories c ON c.id=b.category_id WHERE b.status='active' ORDER BY b.created_at DESC LIMIT 8")->fetchAll();
+header_html('Trang chủ');
+?>
+<section class="home-hero rounded-4 p-4 p-lg-5 mb-5">
+ <div class="row align-items-center g-4">
+  <div class="col-lg-7">
+   <span class="home-kicker"><i class="fa-solid fa-graduation-cap me-2"></i>THƯ VIỆN GIÁO TRÌNH CÔNG NGHỆ THÔNG TIN</span>
+   <h1 class="display-4 fw-bold mt-3">Tri thức hôm nay,<br><span>công nghệ ngày mai.</span></h1>
+   <p class="lead mt-3">Tìm kiếm và khám phá giáo trình CNTT theo học phần. Xem thông tin xuất bản, tác giả, mô tả và tài liệu đính kèm trong một không gian học tập tiện lợi.</p>
+   <div class="d-flex flex-wrap gap-2 mt-4"><a href="books.php" class="btn btn-info btn-lg px-4 fw-bold">Khám phá giáo trình <i class="fa fa-arrow-right ms-2"></i></a><a href="community.php" class="btn btn-outline-light btn-lg px-4">Tham gia cộng đồng</a></div>
+   <div class="home-stats mt-5"><div><strong><?=number_format($totalBooks)?></strong><span>Giáo trình</span></div><div><strong><?=number_format($totalCats)?></strong><span>Danh mục</span></div><div><strong>24/7</strong><span>Tra cứu trực tuyến</span></div></div>
+  </div>
+  <div class="col-lg-5"><div class="home-visual"><div class="visual-orbit orbit-one"></div><div class="visual-orbit orbit-two"></div><div class="visual-book book-a"><i class="fa-solid fa-code"></i><b>CODING</b><small>Learn · Build · Create</small></div><div class="visual-book book-b"><i class="fa-solid fa-database"></i><b>DATABASE</b><small>Structure your ideas</small></div><div class="visual-book book-c"><i class="fa-solid fa-network-wired"></i><b>NETWORK</b><small>Connect the world</small></div><div class="visual-chip"><i class="fa-solid fa-lightbulb"></i> Học tập không giới hạn</div></div></div>
+ </div>
+</section>
+<section class="mb-5"><div class="d-flex justify-content-between align-items-end flex-wrap gap-2 mb-4"><div><span class="eyebrow">BẮT ĐẦU TỪ ĐÂU?</span><h2 class="fw-bold mb-0">Khám phá theo danh mục</h2><p class="text-muted mb-0 mt-2">Chọn lĩnh vực bạn đang học hoặc quan tâm.</p></div><a href="books.php" class="text-decoration-none fw-bold">Xem tất cả <i class="fa fa-arrow-right ms-1"></i></a></div>
+ <div class="row g-3"><?php foreach($cats as $i=>$c): ?><div class="col-6 col-md-4 col-xl-3"><a class="category-tile" href="books.php?category=<?=(int)$c['id']?>"><span class="category-icon"><i class="fa-solid <?=['fa-code','fa-database','fa-network-wired','fa-laptop-code','fa-shield-halved','fa-brain','fa-mobile-screen','fa-book-open'][$i%8]?>"></i></span><span class="category-name"><?=e($c['name'])?></span><small><?=number_format((int)$c['book_count'])?> giáo trình</small><i class="fa fa-arrow-up-right-from-square category-arrow"></i></a></div><?php endforeach; ?><?php if(!$cats):?><div class="col-12"><p class="text-muted">Danh mục đang được cập nhật.</p></div><?php endif;?></div>
+</section>
+<section class="mb-5"><div class="d-flex justify-content-between align-items-end flex-wrap gap-2 mb-4"><div><span class="eyebrow">MỚI ĐƯỢC CẬP NHẬT</span><h2 class="fw-bold mb-0">Giáo trình nổi bật</h2><p class="text-muted mb-0 mt-2">Một số tài liệu mới trong thư viện IT-Books.</p></div><a href="books.php" class="btn btn-outline-primary">Toàn bộ kho giáo trình</a></div>
+ <div class="row g-4"><?php foreach($featured as $b):?><div class="col-sm-6 col-lg-3"><article class="card book-card h-100"><a href="book.php?id=<?=(int)$b['id']?>" class="cover"><img src="<?=e(book_cover($b['cover_image']??null,(int)$b['id']))?>" alt="Bìa <?=e($b['title'])?>" loading="lazy"></a><div class="card-body d-flex flex-column"><small class="text-primary fw-bold"><?=e($b['category_name']??'Giáo trình CNTT')?></small><h5 class="card-title mt-2"><a href="book.php?id=<?=(int)$b['id']?>"><?=e($b['title'])?></a></h5><p class="text-muted small mb-3">Tác giả: <?=e($b['author']?:'Đang cập nhật')?></p><div class="mt-auto d-flex justify-content-between align-items-center"><strong class="price"><?=$b['price']>0?money($b['price']):'Miễn phí'?></strong><a class="btn btn-sm btn-primary" href="book.php?id=<?=(int)$b['id']?>">Xem chi tiết</a></div></div></article></div><?php endforeach;?><?php if(!$featured):?><div class="col-12"><div class="empty-state">Chưa có giáo trình. Quản trị viên có thể thêm giáo trình trong trang quản trị.</div></div><?php endif;?></div>
+</section>
+<section class="home-benefits rounded-4 p-4 p-lg-5 mb-4"><div class="row align-items-center g-4"><div class="col-lg-7"><span class="eyebrow">IT-BOOKS</span><h2 class="fw-bold mt-2">Tập trung vào việc học của bạn</h2><p class="text-muted mb-0">Thông tin giáo trình được trình bày rõ ràng, hỗ trợ tìm kiếm nhanh và quản lý tài liệu thuận tiện.</p></div><div class="col-lg-5"><div class="benefit-list"><div><i class="fa fa-book-open"></i><span><b>Thông tin chi tiết</b><small>Tác giả, nhà xuất bản, năm phát hành, số trang</small></span></div><div><i class="fa fa-magnifying-glass"></i><span><b>Tìm kiếm thuận tiện</b><small>Lọc theo tên, mã giáo trình và danh mục</small></span></div><div><i class="fa fa-file-pdf"></i><span><b>Tài liệu số</b><small>Xem PDF khi giáo trình có đính kèm</small></span></div></div></div></div></section>
+<?php footer_html(); ?>

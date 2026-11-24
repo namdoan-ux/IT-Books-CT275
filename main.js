@@ -1,0 +1,1 @@
+document.addEventListener('DOMContentLoaded',()=>{document.querySelectorAll('form').forEach(form=>{form.addEventListener('submit',()=>{const btn=form.querySelector('button[type="submit"],button:not([type])');if(btn&&!form.dataset.noLoading){btn.disabled=true;btn.innerHTML='<span class="spinner-border spinner-border-sm me-2"></span>Đang xử lý...';}});});});
