@@ -3,17 +3,17 @@ function e($v): string { return htmlspecialchars((string)$v, ENT_QUOTES|ENT_SUBS
 function redirect(string $url): never { header('Location: '.$url); exit; }
 function flash(string $type,string $message): void { $_SESSION['flash']=['type'=>$type,'message'=>$message]; }
 function csrf_token(): string { if(empty($_SESSION['csrf'])) $_SESSION['csrf']=bin2hex(random_bytes(32)); return $_SESSION['csrf']; }
-function csrf_check(): void { if($_SERVER['REQUEST_METHOD']==='POST' && !hash_equals($_SESSION['csrf']??'', $_POST['csrf']??'')){ http_response_code(403); exit('Yêu cầu không hợp lệ (CSRF).'); } }
+function csrf_check(): void { if($_SERVER['REQUEST_METHOD']==='POST'){ $known=$_SESSION['csrf']??''; $given=$_POST['csrf']??''; if(!is_string($known)||!is_string($given)||$known===''||$given===''||!hash_equals($known,$given)){ http_response_code(403); exit('Yêu cầu không hợp lệ (CSRF).'); } } }
 function user(): ?array { return $_SESSION['user']??null; }
 function require_login(): void { if(!user()){ flash('warning','Vui lòng đăng nhập để tiếp tục.'); redirect('auth.php'); } }
 function require_admin(): void { require_login(); if((user()['role']??'')!=='admin'){ http_response_code(403); exit('Bạn không có quyền truy cập khu vực quản trị.'); } }
 function money($n): string { return number_format((float)$n,0,',','.').'đ'; }
 
-/** Validate conditional HTTP requests for public, non-personal pages (ETag / Last-Modified). */
+/** Validate conditional HTTP requests while keeping session-rendered pages private (ETag / Last-Modified). */
 function http_cache_validate(string $etag, ?int $modifiedAt = null, int $maxAge = 60): void {
     $etag = '"' . trim($etag, '"') . '"';
     header('ETag: ' . $etag);
-    header('Cache-Control: public, max-age=' . max(0, $maxAge) . ', must-revalidate');
+    header('Cache-Control: private, max-age=' . max(0, $maxAge) . ', must-revalidate');
     if ($modifiedAt) {
         $lastModified = gmdate('D, d M Y H:i:s', $modifiedAt) . ' GMT';
         header('Last-Modified: ' . $lastModified);
